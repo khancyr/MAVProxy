@@ -431,7 +431,7 @@ class parseHTMLDirectoryListing(HTMLParser):
             self.title = data
             '''print "title=%s" % data'''
             if "Index of" in self.title:
-                #print "it is an index!!!!"
+                # print("it is an index!!!!")
                 self.isDirListing = True
         if self.inHyperLink:
             # We do not include parent directory in listing.
@@ -441,12 +441,12 @@ class parseHTMLDirectoryListing(HTMLParser):
     def getDirListing(self):
         return self.dirList
 
-#DEBUG ONLY
+# DEBUG ONLY
 if __name__ == '__main__':
     downloader = SRTMDownloader()
     downloader.loadFileList()
     tile = downloader.getTile(-36, 149)
-    print tile.getAltitudeFromLatLon(-35.282, 149.1287)
+    print(tile.getAltitudeFromLatLon(-35.282, 149.1287))
 
 
 

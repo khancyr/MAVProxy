@@ -577,7 +577,7 @@ class MissionEditorFrame(wx.Frame):
         try:
             wp_radius = float(self.text_ctrl_wp_radius.GetValue())
         except Exception as e:
-            print e.strerror
+            print(e.strerror)
             return
 
         #text back to black
@@ -594,7 +594,7 @@ class MissionEditorFrame(wx.Frame):
         try:
             loit_radius = float(self.text_ctrl_loiter_radius.GetValue())
         except Exception as e:
-            print e.strerror
+            print(e.strerror)
             return
 
         if (not self.checkbox_loiter_dir.IsChecked()):
@@ -618,6 +618,7 @@ class MissionEditorFrame(wx.Frame):
         self.text_ctrl_loiter_radius.SetForegroundColour(wx.Colour(255, 0, 0))
 
         event.Skip()
+
     def on_loiter_dir_cb_change(self, event):  # wxGlade: MissionEditorFrame.<event_handler>
         self.send_loiter_rad_msg()
         event.Skip()
@@ -626,10 +627,10 @@ class MissionEditorFrame(wx.Frame):
         try:
             def_alt = float(self.text_ctrl_wp_default_alt.GetValue())
         except Exception as e:
-            print e.strerror
+            print(e.strerror)
             return
 
-        #text back to black
+        # text back to black
         self.text_ctrl_wp_default_alt.SetForegroundColour(wx.Colour(0, 0, 0))
 
         self.event_queue_lock.acquire()
@@ -640,7 +641,7 @@ class MissionEditorFrame(wx.Frame):
         event.Skip()
 
     def on_wp_default_alt_change(self, event):  # wxGlade: MissionEditorFrame.<event_handler>
-        #change text red
+        # change text red
         self.text_ctrl_wp_default_alt.SetForegroundColour(wx.Colour(255, 0, 0))
 
         event.Skip()

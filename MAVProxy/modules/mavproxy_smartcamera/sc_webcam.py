@@ -40,7 +40,7 @@ class SmartCameraWebCam:
 
         # check we can connect to camera
         if not self.camera.isOpened():
-            print "failed to open webcam %d" % self.instance
+            print("failed to open webcam %d" % self.instance)
 
     # __str__ - print position vector as string
     def __str__(self):
@@ -51,7 +51,7 @@ class SmartCameraWebCam:
         # write to file
         #imgfilename = "C:\Users\rmackay9\Documents\GitHub\ardupilot-balloon-finder\smart_camera\img%d-%d.jpg" % (cam_num,cam.get_image_counter())
         imgfilename = "img%d-%d.jpg" % (self.instance,self.get_image_counter())
-        print (imgfilename)
+        print(imgfilename)
         cv2.imwrite(imgfilename, self.latest_image)
         return self.latest_image
 
@@ -96,7 +96,7 @@ class SmartCameraWebCam:
                 # display image
                 cv2.imshow ('image_display', self.get_latest_image())
             else:
-                print "no image"
+                print("no image")
 
             # check for ESC key being pressed
             k = cv2.waitKey(5) & 0xFF

@@ -76,7 +76,7 @@ class SmartCamera(object):
                     print("Found QX Camera")
 
         # display number of cameras found
-        print ("cameras found: %d" % len(self.camera_list))
+        print("cameras found: %d" % len(self.camera_list))
 
     # fetch_mission - fetch mission from flight controller
     def fetch_mission(self):

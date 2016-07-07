@@ -91,11 +91,11 @@ def menu_callback(m):
         idx = int(m.returnkey[5:])
         mestate.flightmode_selections[idx] = m.IsChecked()
     elif m.returnkey.startswith("loadLog"):
-        print "File: " + m.returnkey[8:]
+        print("File: " + m.returnkey[8:])
     elif m.returnkey == 'quit':
         mestate.console.close()
         mestate.exit = True
-        print "Exited. Press Enter to continue."
+        print("Exited. Press Enter to continue.")
         sys.exit(0)
 
     else:
@@ -410,7 +410,7 @@ def cmd_param(args):
 def cmd_loadfile(args):
     """Callback from menu to load a log file."""
     if len(args) != 1:
-        print "Error loading file"
+        print("Error loading file")
         return
     loadfile(args[0])
 

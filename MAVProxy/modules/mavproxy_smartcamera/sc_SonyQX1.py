@@ -396,7 +396,7 @@ class SmartCamera_SonyQX():
     def __sFindCameraURL(self, sInterface):
         sSSDPString = "urn:schemas-sony-com:service:ScalarWebAPI:1";
         sInterfaceIP = self.__sFindInterfaceIPAddress(sInterface)
-        print ("Interface IP Address: %s" % sInterfaceIP)
+        print("Interface IP Address: %s" % sInterfaceIP)
         sRet = ssdp.discover(sSSDPString, if_ip=sInterfaceIP)
         if len(sRet) == 0:
             return None
@@ -429,7 +429,7 @@ class SmartCamera_SonyQX():
 #****************************************************************************
 
     def boValidCameraFound(self):
-        print ("Checking URL at %s" % self.sCameraURL)
+        print("Checking URL at %s" % self.sCameraURL)
         if self.sCameraURL is None:
             return False
 
@@ -453,7 +453,7 @@ class SmartCamera_SonyQX():
 
     def boGetLatestImage(self):
         self.sLatestImageFilename = '%s_image_%s.jpg' % (self.sConfigGroup,self.u32ImgCounter)
-        print ("Downloading, ",self.sLatestImageFilename)
+        print("Downloading, ",self.sLatestImageFilename)
         imgReq = requests.request('GET', self.sLatestImageURL)
         if imgReq is not None:
             open(self.sLatestImageFilename, 'w').write(imgReq.content)
@@ -514,11 +514,11 @@ class SmartCamera_SonyQX():
 
         # Check response for a successful result
         if 'result' in sResponse:
-            print ("Zoomed in")
+            print("Zoomed in")
             return True
 
         # In case of an error, return false
-        print ("Failed to Zoom")
+        print("Failed to Zoom")
         return False
 
 #****************************************************************************
@@ -542,11 +542,11 @@ class SmartCamera_SonyQX():
 
         # Check response for a successful result
         if 'result' in sResponse:
-            print ("Zoomed out")
+            print("Zoomed out")
             return True
 
         # In case of an error, return false
-        print ("Failed to Zoom")
+        print("Failed to Zoom")
         return False
 
 #****************************************************************************
@@ -574,14 +574,14 @@ class SmartCamera_SonyQX():
             sResponse = self.__sSimpleCall("getExposureMode")
 
             if sExposureMode not in sResponse["result"]:
-                print ("Failed to set Exposure Mode, current value: %s" %sResponse["result"])
+                print("Failed to set Exposure Mode, current value: %s" %sResponse["result"])
                 return False
 
-            print ("Exposure Mode set to %s" % sExposureMode)
+            print("Exposure Mode set to %s" % sExposureMode)
             return True
 
         # In case of an error, return false
-        print ("Failed to set Exposure Mode")
+        print("Failed to set Exposure Mode")
         return False
 
 #****************************************************************************
@@ -613,14 +613,14 @@ class SmartCamera_SonyQX():
             sResponse = self.__sSimpleCall("getShutterSpeed")
 
             if sShutterSpeed not in sResponse["result"]:
-                print ("Failed to set Shutter Speed, current value: %s" %sResponse["result"])
+                print("Failed to set Shutter Speed, current value: %s" %sResponse["result"])
                 return False
 
-            print ("Shutter Speed set to %s" % sShutterSpeed)
+            print("Shutter Speed set to %s" % sShutterSpeed)
             return True
 
         # In case of an error, return false
-        print ("Failed to set Shutter Speed")
+        print("Failed to set Shutter Speed")
         return False
 
 #****************************************************************************
@@ -652,14 +652,14 @@ class SmartCamera_SonyQX():
             sResponse = self.__sSimpleCall("getFNumber")
 
             if sFValue not in sResponse["result"]:
-                print ("Failed to set aperture, current value: %s" %sResponse["result"])
+                print("Failed to set aperture, current value: %s" %sResponse["result"])
                 return False
 
-            print ("Aperture set to %s" % sFValue)
+            print("Aperture set to %s" % sFValue)
             return True
 
         # In case of an error, return false
-        print ("Failed to set aperture")
+        print("Failed to set aperture")
         return False
 
 #****************************************************************************
@@ -689,14 +689,14 @@ class SmartCamera_SonyQX():
             sResponse = self.__sSimpleCall("getIsoSpeedRate")
 
             if sISO not in sResponse["result"]:
-                print ("Failed to Set ISO, current value: %s" %sResponse["result"])
+                print("Failed to Set ISO, current value: %s" %sResponse["result"])
                 return False
 
-            print ("ISO set to %s" % sISO)
+            print("ISO set to %s" % sISO)
             return True
 
         # In case of an error, return false
-        print ("Failed to Set ISO")
+        print("Failed to Set ISO")
         return False
 
 #****************************************************************************
@@ -777,7 +777,7 @@ class SmartCamera_SonyQX():
                 # display image
                 cv2.imshow ('image_display', self.get_latest_image())
             else:
-                print "no image"
+                print("no image")
 
             # check for ESC key being pressed
             k = cv2.waitKey(5) & 0xFF
