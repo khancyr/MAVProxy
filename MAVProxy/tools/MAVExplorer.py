@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-'''
-log analysis program
+"""
+Log analysis program.
+
 Andrew Tridgell December 2014
-'''
+"""
 
 import sys, struct, time, os, datetime
 import math, re
@@ -24,16 +25,18 @@ from MAVProxy.modules.lib.graphdefinition import GraphDefinition
 from lxml import objectify
 import pkg_resources
 
-#Global var to hold the GUI menu element
+# Global var to hold the GUI menu element
 TopMenu = None
 
+
 class MEStatus(object):
-    '''status object to conform with mavproxy structure for modules'''
+    """Status object to conform with mavproxy structure for modules."""
     def __init__(self):
         self.msgs = {}
 
+
 class MEState(object):
-    '''holds state of MAVExplorer'''
+    """Holds state of MAVExplorer."""
     def __init__(self):
         self.input_queue = Queue.Queue()
         self.rl = None
@@ -41,38 +44,40 @@ class MEState(object):
         self.exit = False
         self.status = MEStatus()
         self.settings = MPSettings(
-            [ MPSetting('marker', str, '+', 'data marker', tab='Graph'),
-              MPSetting('condition', str, None, 'condition'),
-              MPSetting('xaxis', str, None, 'xaxis'),
-              MPSetting('linestyle', str, None, 'linestyle'),
-              MPSetting('show_flightmode', bool, True, 'show flightmode'),
-              MPSetting('legend', str, 'upper left', 'legend position'),
-              MPSetting('legend2', str, 'upper right', 'legend2 position')
-              ]
+            [MPSetting('marker', str, '+', 'data marker', tab='Graph'),
+             MPSetting('condition', str, None, 'condition'),
+             MPSetting('xaxis', str, None, 'xaxis'),
+             MPSetting('linestyle', str, None, 'linestyle'),
+             MPSetting('show_flightmode', bool, True, 'show flightmode'),
+             MPSetting('legend', str, 'upper left', 'legend position'),
+             MPSetting('legend2', str, 'upper right', 'legend2 position'),
+             ]
             )
 
         self.mlog = None
         self.command_map = command_map
         self.completions = {
-            "set"       : ["(SETTING)"],
-            "condition" : ["(VARIABLE)"],
-            "graph"     : ['(VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE)'],
-            "map"       : ['(VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE)']
+            "set":          ["(SETTING)"],
+            "condition":    ["(VARIABLE)"],
+            "graph":        ['(VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE)'],
+            "map":          ['(VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE)'],
             }
         self.aliases = {}
         self.graphs = []
         self.flightmode_selections = []
         self.last_graph = GraphDefinition('Untitled', '', '', [], None)
 
+
 def have_graph(name):
-    '''return true if we have a graph of the given name'''
+    """Return true if we have a graph of the given name."""
     for g in mestate.graphs:
         if g.name == name:
             return True
     return False
 
+
 def menu_callback(m):
-    '''called on menu selection'''
+    """Called on menu selection."""
     if m.returnkey.startswith('# '):
         cmd = m.returnkey[2:]
         if m.handler is not None:
@@ -98,11 +103,11 @@ def menu_callback(m):
 
 
 def flightmode_menu():
-    '''construct flightmode menu'''
+    """Construct flightmode menu."""
     modes = mestate.mlog.flightmode_list()
     ret = []
     idx = 0
-    for (mode,t1,t2) in modes:
+    for (mode, t1, t2) in modes:
         modestr = "%s %us" % (mode, (t2-t1))
         ret.append(MPMenuCheckbox(modestr, modestr, 'mode-%u' % idx))
         idx += 1
@@ -111,7 +116,7 @@ def flightmode_menu():
 
 
 def graph_menus():
-    '''return menu tree for graphs (recursive)'''
+    """Return menu tree for graphs (recursive)."""
     ret = MPMenuSubMenu('Graphs', [])
     for i in range(len(mestate.graphs)):
         g = mestate.graphs[i]
@@ -121,33 +126,36 @@ def graph_menus():
         ret.add_to_submenu(path, MPMenuItem(name, name, '# graph :%u' % i))
     return ret
 
+
 def setup_file_menu():
     global TopMenu
     TopMenu = MPMenuTop([])
     TopMenu.add(MPMenuSubMenu('MAVExplorer',
-                           items=[MPMenuItem('Settings', 'Settings', 'menuSettings'),
-                                  MPMenuItem('&Open\tCtrl+O', 'Open Log', '# loadLog ',
-                                            handler=MPMenuCallFileDialog(
-                                                                        flags=('open',),
-                                                                        title='Logfile Load',
-                                                                        wildcard='*.tlog;*.log;*.BIN;*.bin')),
-                                  MPMenuItem('&Quit\tCtrl+Q', 'Quit', 'quit')]))
+                              items=[MPMenuItem('Settings', 'Settings', 'menuSettings'),
+                                     MPMenuItem('&Open\tCtrl+O', 'Open Log', '# loadLog ',
+                                                handler=MPMenuCallFileDialog(
+                                                                             flags=('open',),
+                                                                             title='Logfile Load',
+                                                                             wildcard='*.tlog;*.log;*.BIN;*.bin')),
+                                     MPMenuItem('&Quit\tCtrl+Q', 'Quit', 'quit')]))
     mestate.console.set_menu(TopMenu, menu_callback)
 
+
 def setup_menus():
-    '''setup console menus'''
+    """Setup console menus."""
     global TopMenu
     TopMenu.add(MPMenuSubMenu('Display',
-                           items=[MPMenuItem('Map', 'Map', '# map'),
-                                  MPMenuItem('Save Graph', 'Save', '# save'),
-                                  MPMenuItem('Reload Graphs', 'Reload', '# reload')]))
+                              items=[MPMenuItem('Map', 'Map', '# map'),
+                                     MPMenuItem('Save Graph', 'Save', '# save'),
+                                     MPMenuItem('Reload Graphs', 'Reload', '# reload')]))
     TopMenu.add(graph_menus())
     TopMenu.add(MPMenuSubMenu('FlightMode', items=flightmode_menu()))
 
     mestate.console.set_menu(TopMenu, menu_callback)
 
+
 def expression_ok(expression):
-    '''return True if an expression is OK with current messages'''
+    """Return True if an expression is OK with current messages."""
     expression_ok = True
     fields = expression.split()
     for f in fields:
@@ -161,8 +169,9 @@ def expression_ok(expression):
             break
     return expression_ok
 
+
 def load_graph_xml(xml, filename, load_all=False):
-    '''load a graph from one xml string'''
+    """Load a graph from one xml string."""
     ret = []
     try:
         root = objectify.fromstring(xml)
@@ -186,8 +195,9 @@ def load_graph_xml(xml, filename, load_all=False):
                 break
     return ret
 
+
 def load_graphs():
-    '''load graphs from mavgraphs.xml'''
+    """Load graphs from mavgraphs.xml ."""
     mestate.graphs = []
     gfiles = ['mavgraphs.xml']
     if 'HOME' in os.environ:
@@ -201,13 +211,13 @@ def load_graphs():
                 if filename.lower().endswith('.xml'):
                     gfiles.append(os.path.join(dirname, filename))
 
-    for file in gfiles:
-        if not os.path.exists(file):
+    for file_name in gfiles:
+        if not os.path.exists(file_name):
             continue
-        graphs = load_graph_xml(open(file).read(), file)
+        graphs = load_graph_xml(open(file_name).read(), file_name)
         if graphs:
             mestate.graphs.extend(graphs)
-            mestate.console.writeln("Loaded %s" % file)
+            mestate.console.writeln("Loaded %s" % file_name)
     # also load the built in graphs
     dlist = pkg_resources.resource_listdir("MAVProxy", "tools/graphs")
     for f in dlist:
@@ -218,8 +228,9 @@ def load_graphs():
             mestate.console.writeln("Loaded %s" % f)
     mestate.graphs = sorted(mestate.graphs, key=lambda g: g.name)
 
+
 def graph_process(fields, mavExpLog, mavExpFlightModeSel, mavExpSettings):
-    '''process for a graph'''
+    """Process for a graph."""
     mavExpLog.reduce_by_flightmodes(mavExpFlightModeSel)
 
     mg = grapher.MavGraph()
@@ -235,14 +246,16 @@ def graph_process(fields, mavExpLog, mavExpFlightModeSel, mavExpSettings):
     mg.process()
     mg.show()
 
+
 def display_graph(graphdef):
-    '''display a graph'''
+    """Display a graph."""
     mestate.console.write("Expression: %s\n" % ' '.join(graphdef.expression.split()))
     child = multiprocessing.Process(target=graph_process, args=[graphdef.expression.split(), mestate.mlog, mestate.flightmode_selections, mestate.settings])
     child.start()
 
+
 def cmd_graph(args):
-    '''graph command'''
+    """Graph command."""
     usage = "usage: graph <FIELD...>"
     if len(args) < 1:
         print(usage)
@@ -262,8 +275,9 @@ def cmd_graph(args):
         mestate.last_graph = GraphDefinition('Untitled', expression, '', [expression], None)
     display_graph(mestate.last_graph)
 
+
 def map_process(args, MAVExpLog, MAVExpFlightModes, MAVExpSettings):
-    '''process for a graph'''
+    """Process for a graph."""
     from mavflightview import mavflightview_mav, mavflightview_options
     MAVExpLog.reduce_by_flightmodes(MAVExpFlightModes)
 
@@ -273,17 +287,20 @@ def map_process(args, MAVExpLog, MAVExpFlightModes, MAVExpSettings):
         options.types = ','.join(args)
     mavflightview_mav(MAVExpLog, options)
 
+
 def cmd_map(args):
-    '''map command'''
+    """Map command."""
     child = multiprocessing.Process(target=map_process, args=[args, mestate.mlog, mestate.flightmode_selections, mestate.settings])
     child.start()
 
+
 def cmd_set(args):
-    '''control MAVExporer options'''
+    """Control MAVExporer options."""
     mestate.settings.command(args)
 
+
 def cmd_condition(args):
-    '''control MAVExporer conditions'''
+    """Control MAVExporer conditions."""
     if len(args) == 0:
         print("condition is: %s" % mestate.settings.condition)
         return
@@ -291,15 +308,17 @@ def cmd_condition(args):
     if len(mestate.settings.condition) == 0 or mestate.settings.condition == 'clear':
         mestate.settings.condition = None
 
+
 def cmd_reload(args):
-    '''reload graphs'''
+    """Reload graphs."""
     mestate.console.writeln('Reloading graphs', fg='blue')
     load_graphs()
     setup_menus()
     mestate.console.write("Loaded %u graphs\n" % len(mestate.graphs))
 
+
 def save_graph(graphdef, mestate):
-    '''save a graph as XML'''
+    """Save a graph as XML."""
     if graphdef.filename is None:
         if 'HOME' in os.environ:
             dname = os.path.join(os.environ['HOME'], '.mavproxy')
@@ -342,8 +361,9 @@ def save_graph(graphdef, mestate):
     f.write("</graphs>\n")
     f.close()
 
+
 def save_callback(operation, graphdef):
-    '''callback from save thread'''
+    """Callback from save thread."""
     if operation == 'test':
         for e in graphdef.expressions:
             if expression_ok(e):
@@ -355,8 +375,9 @@ def save_callback(operation, graphdef):
     if operation == 'save':
         save_graph(graphdef, mestate)
 
+
 def save_process(MAVExpLastGraph):
-    '''process for saving a graph'''
+    """Process for saving a graph."""
     from MAVProxy.modules.lib import wx_processguard
     from MAVProxy.modules.lib.wx_loader import wx
     from MAVProxy.modules.lib.wxgrapheditor import GraphDialog
@@ -369,12 +390,13 @@ def save_process(MAVExpLastGraph):
 
 
 def cmd_save(args):
-    '''save a graph'''
+    """Save a graph."""
     child = multiprocessing.Process(target=save_process, args=[mestate.last_graph])
     child.start()
 
+
 def cmd_param(args):
-    '''show parameters'''
+    """Show parameters."""
     if len(args) > 0:
         wildcard = args[0]
     else:
@@ -384,15 +406,17 @@ def cmd_param(args):
         if fnmatch.fnmatch(str(p).upper(), wildcard.upper()):
             print("%-16.16s %f" % (str(p), mestate.mlog.params[p]))
 
+
 def cmd_loadfile(args):
-    '''callback from menu to load a log file'''
+    """Callback from menu to load a log file."""
     if len(args) != 1:
         print "Error loading file"
         return
     loadfile(args[0])
 
+
 def loadfile(args):
-    '''load a log file (path given by arg)'''
+    """Load a log file (path given by arg)."""
     mestate.console.write("Loading %s...\n" % args)
     t0 = time.time()
     mlog = mavutil.mavlink_connection(args, notimestamps=False,
@@ -405,8 +429,9 @@ def loadfile(args):
     load_graphs()
     setup_menus()
 
+
 def process_stdin(line):
-    '''handle commands from user'''
+    """Handle commands from user."""
     if line is None:
         sys.exit(0)
 
@@ -420,35 +445,37 @@ def process_stdin(line):
         k = command_map.keys()
         k.sort()
         for cmd in k:
-            (fn, help) = command_map[cmd]
-            print("%-15s : %s" % (cmd, help))
+            (fn, help_msg) = command_map[cmd]
+            print("%-15s : %s" % (cmd, help_msg))
         return
     if cmd == 'exit':
         mestate.exit = True
         return
 
-    if not cmd in command_map:
+    if cmd not in command_map:
         print("Unknown command '%s'" % line)
         return
-    (fn, help) = command_map[cmd]
+    (fn, help_msg) = command_map[cmd]
     try:
         fn(args[1:])
     except Exception as e:
         print("ERROR in command %s: %s" % (args[1:], str(e)))
 
+
 def input_loop():
-    '''wait for user input'''
-    while mestate.exit != True:
+    """Wait for user input."""
+    while mestate.exit is not True:
         try:
-            if mestate.exit != True:
+            if mestate.exit is not True:
                 line = raw_input(mestate.rl.prompt)
         except EOFError:
             mestate.exit = True
             sys.exit(1)
         mestate.input_queue.put(line)
 
+
 def main_loop():
-    '''main processing loop, display graphs and maps'''
+    """Main processing loop, display graphs and maps."""
     while True:
         if mestate is None or mestate.exit:
             return
@@ -460,17 +487,19 @@ def main_loop():
         time.sleep(0.1)
 
 command_map = {
-    'graph'      : (cmd_graph,     'display a graph'),
-    'set'        : (cmd_set,       'control settings'),
-    'reload'     : (cmd_reload,    'reload graphs'),
-    'save'       : (cmd_save,      'save a graph'),
-    'condition'  : (cmd_condition, 'set graph conditions'),
-    'param'      : (cmd_param,     'show parameters'),
-    'map'        : (cmd_map,       'show map view'),
-    'loadLog'    : (cmd_loadfile,  'load a log file'),
+    'graph':        (cmd_graph,     'display a graph'),
+    'set':          (cmd_set,       'control settings'),
+    'reload':       (cmd_reload,    'reload graphs'),
+    'save':         (cmd_save,      'save a graph'),
+    'condition':    (cmd_condition, 'set graph conditions'),
+    'param':        (cmd_param,     'show parameters'),
+    'map':          (cmd_map,       'show map view'),
+    'loadLog':      (cmd_loadfile,  'load a log file'),
     }
 
+
 def progress_bar(pct):
+    """Print a progress bar."""
     if pct % 2 == 0:
         mestate.console.write('#')
 
@@ -486,8 +515,8 @@ if __name__ == "__main__":
     parser.add_argument("files", metavar="<FILE>", nargs="?")
     args = parser.parse_args()
 
-    #If specified, open the log file
-    if args.files != None and len(args.files) != 0:
+    # If specified, open the log file
+    if args.files is not None and len(args.files) != 0:
         loadfile(args.files)
 
     # run main loop as a thread
@@ -496,7 +525,7 @@ if __name__ == "__main__":
     mestate.thread.start()
 
     # input loop
-    while mestate.rl != None and mestate.exit != True:
+    while mestate.rl is not None and mestate.exit is not True:
         try:
             try:
                 line = raw_input(mestate.rl.prompt)
@@ -507,4 +536,3 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             mestate.exit = True
             break
-

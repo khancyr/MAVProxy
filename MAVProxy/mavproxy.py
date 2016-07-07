@@ -198,13 +198,13 @@ class MPState(object):
         self.system = platform.system()
 
     def module(self, name):
-        """Find a public module (most modules are private)"""
+        """Find a public module (most modules are private)."""
         if name in self.public_modules:
             return self.public_modules[name]
         return None
 
     def master(self):
-        """Return the currently chosen mavlink master object"""
+        """Return the currently chosen mavlink master object."""
         if len(self.mav_master) == 0:
             return None
         if self.settings.link > len(self.mav_master):
@@ -220,18 +220,18 @@ class MPState(object):
 
 
 def get_mav_param(param, default=None):
-    """Return a EEPROM parameter value"""
+    """Return a EEPROM parameter value."""
     return mpstate.mav_param.get(param, default)
 
 
 def param_set(name, value, retries=3):
-    """Set a parameter"""
+    """Set a parameter."""
     name = name.upper()
     return mpstate.mav_param.mavset(mpstate.master(), name, value, retries=retries)
 
 
 def cmd_script(args):
-    """Run a script"""
+    """Run a script."""
     if len(args) < 1:
         print("usage: script <filename>")
         return
@@ -240,12 +240,12 @@ def cmd_script(args):
 
 
 def cmd_set(args):
-    """Control mavproxy options"""
+    """Control mavproxy options."""
     mpstate.settings.command(args)
 
 
 def cmd_status(args):
-    """Show status"""
+    """Show status."""
     if len(args) == 0:
         mpstate.status.show(sys.stdout, pattern=None)
     else:
@@ -264,7 +264,7 @@ def cmd_reset():
 
 
 def cmd_watch(args):
-    """watch a mavlink packet pattern"""
+    """Watch a mavlink packet pattern."""
     if len(args) == 0:
         mpstate.status.watch = None
         return
@@ -273,7 +273,7 @@ def cmd_watch(args):
 
 
 def load_module(modname, quiet=False):
-    """load a module"""
+    """Load a module."""
     modpaths = ['MAVProxy.modules.mavproxy_%s' % modname, modname]
     ex = ""
     for (m, pm) in mpstate.modules:
@@ -304,7 +304,7 @@ def load_module(modname, quiet=False):
 
 
 def unload_module(modname):
-    """unload a module"""
+    """Unload a module."""
     for (m, pm) in mpstate.modules:
         if m.name == modname:
             if hasattr(m, 'unload'):
@@ -317,7 +317,7 @@ def unload_module(modname):
 
 
 def cmd_module(args):
-    """module commands"""
+    """Module commands."""
     usage = "usage: module <list|load|reload|unload>"
     if len(args) < 1:
         print(usage)
@@ -362,7 +362,7 @@ def cmd_module(args):
 
 
 def cmd_alias(args):
-    """alias commands"""
+    """Alias commands."""
     usage = "usage: alias <add|remove|list>"
     if len(args) < 1 or args[0] == "list":
         if len(args) >= 2:
@@ -437,7 +437,7 @@ command_map = {
 
 
 def shlex_quotes(value):
-    """see http://stackoverflow.com/questions/6868382/python-shlex-split-ignore-single-quotes"""
+    """See http://stackoverflow.com/questions/6868382/python-shlex-split-ignore-single-quotes ."""
     lex = shlex.shlex(value)
     lex.quotes = '"'
     lex.whitespace_split = True
@@ -446,7 +446,7 @@ def shlex_quotes(value):
 
 
 def process_stdin(line):
-    """handle commands from user"""
+    """Handle commands from user."""
     if line is None:
         sys.exit(0)
 
@@ -512,7 +512,7 @@ def process_stdin(line):
 
 
 def process_master(m):
-    """process packets from the MAVLink master"""
+    """Process packets from the MAVLink master."""
     try:
         s = m.recv(16*1024)
     except Exception:
@@ -556,7 +556,7 @@ def process_master(m):
 
 
 def process_mavlink(slave):
-    """process packets from MAVLink slaves, forwarding to the master"""
+    """Process packets from MAVLink slaves, forwarding to the master."""
     try:
         buf = slave.recv()
     except socket.error:
@@ -580,7 +580,7 @@ def process_mavlink(slave):
 
 
 def mkdir_p(dir_name):
-    """Like mkdir -p"""
+    """Like mkdir -p ."""
     if not dir_name:
         return
     if dir_name.endswith("/"):
@@ -593,7 +593,7 @@ def mkdir_p(dir_name):
 
 
 def log_writer():
-    """Log writing thread"""
+    """Log writing thread."""
     while True:
         mpstate.logfile_raw.write(mpstate.logqueue_raw.get())
         while not mpstate.logqueue_raw.empty():
@@ -608,7 +608,7 @@ def log_writer():
 # If state_basedir is NOT set then paths for logs and aircraft
 # directories are relative to mavproxy's cwd
 def log_paths():
-    """Returns tuple (logdir, telemetry_log_filepath, raw_telemetry_log_filepath)"""
+    """Returns tuple (logdir, telemetry_log_filepath, raw_telemetry_log_filepath)."""
     if cmd_opts.aircraft is not None:
         dirname = ""
         if(cmd_opts.daemon):
@@ -654,7 +654,7 @@ def log_paths():
 
 
 def open_telemetry_logs(logpath_telem, logpath_telem_raw):
-    """open log files"""
+    """Open log files."""
     if cmd_opts.append_log or cmd_opts.continue_mode:
         mode = 'a'
     else:
@@ -686,7 +686,7 @@ def open_telemetry_logs(logpath_telem, logpath_telem_raw):
 
 
 def set_stream_rates():
-    """Set mavlink stream rates"""
+    """Set mavlink stream rates."""
     if (not msg_period.trigger() and
         mpstate.status.last_streamrate1 == mpstate.settings.streamrate and
             mpstate.status.last_streamrate2 == mpstate.settings.streamrate2):
@@ -705,7 +705,7 @@ def set_stream_rates():
 
 
 def check_link_status():
-    """Check status of master links"""
+    """Check status of master links."""
     tnow = time.time()
     if mpstate.status.last_message != 0 and tnow > mpstate.status.last_message + 5:
         say("no link")
@@ -717,6 +717,7 @@ def check_link_status():
 
 
 def send_heartbeat(master):
+    """Send heartbeat."""
     if master.mavlink10():
         master.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS, mavutil.mavlink.MAV_AUTOPILOT_INVALID,
                                   0, 0, 0)
@@ -727,7 +728,7 @@ def send_heartbeat(master):
 
 
 def periodic_tasks():
-    """Run periodic checks"""
+    """Run periodic checks."""
     if mpstate.status.setup_mode:
         return
 
@@ -766,7 +767,7 @@ def periodic_tasks():
 
 
 def main_loop():
-    """main processing loop"""
+    """Main processing loop."""
     if not mpstate.status.setup_mode and not cmd_opts.nowait:
         for master in mpstate.mav_master:
             send_heartbeat(master)
@@ -856,7 +857,7 @@ def main_loop():
 
 
 def input_loop():
-    """Wait for user input"""
+    """Wait for user input."""
     while mpstate.status.exit is not True:
         try:
             if mpstate.status.exit is not True:
@@ -868,7 +869,7 @@ def input_loop():
 
 
 def run_script(scriptfile):
-    """Run a script file"""
+    """Run a script file."""
     try:
         f = open(scriptfile, mode='r')
     except Exception:
