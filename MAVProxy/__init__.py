@@ -1,1 +1,1 @@
-'''MAVProxy MAVLink ground station libraries'''
+"""MAVProxy MAVLink ground station libraries"""
