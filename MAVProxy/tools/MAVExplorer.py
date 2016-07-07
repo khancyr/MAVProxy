@@ -57,11 +57,11 @@ class MEState(object):
         self.mlog = None
         self.command_map = command_map
         self.completions = {
-            "set":          ["(SETTING)"],
-            "condition":    ["(VARIABLE)"],
-            "graph":        ['(VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE)'],
-            "map":          ['(VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE)'],
-            }
+            "set"       : ["(SETTING)"],
+            "condition" : ["(VARIABLE)"],
+            "graph"     : ['(VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE)'],
+            "map"       : ['(VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE) (VARIABLE)']
+        }
         self.aliases = {}
         self.graphs = []
         self.flightmode_selections = []
@@ -487,15 +487,15 @@ def main_loop():
         time.sleep(0.1)
 
 command_map = {
-    'graph':        (cmd_graph,     'display a graph'),
-    'set':          (cmd_set,       'control settings'),
-    'reload':       (cmd_reload,    'reload graphs'),
-    'save':         (cmd_save,      'save a graph'),
-    'condition':    (cmd_condition, 'set graph conditions'),
-    'param':        (cmd_param,     'show parameters'),
-    'map':          (cmd_map,       'show map view'),
-    'loadLog':      (cmd_loadfile,  'load a log file'),
-    }
+    'graph'      : (cmd_graph,     'display a graph'),
+    'set'        : (cmd_set,       'control settings'),
+    'reload'     : (cmd_reload,    'reload graphs'),
+    'save'       : (cmd_save,      'save a graph'),
+    'condition'  : (cmd_condition, 'set graph conditions'),
+    'param'      : (cmd_param,     'show parameters'),
+    'map'        : (cmd_map,       'show map view'),
+    'loadLog'    : (cmd_loadfile,  'load a log file'),
+}
 
 
 def progress_bar(pct):
