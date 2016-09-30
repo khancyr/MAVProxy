@@ -38,7 +38,7 @@ if __name__ == '__main__':
 class MPStatus(object):
     '''hold status information about the mavproxy'''
     def __init__(self):
-        self.gps	 = None
+        self.gps = None
         self.msgs = {}
         self.msg_count = {}
         self.counters = {'MasterIn' : [], 'MasterOut' : 0, 'FGearIn' : 0, 'FGearOut' : 0, 'Slave' : 0}
