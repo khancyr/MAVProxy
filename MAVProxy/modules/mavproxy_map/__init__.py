@@ -87,6 +87,7 @@ class MapModule(mp_module.MPModule):
         self.add_menu(MPMenuItem('Set Origin (with height)', 'Set Origin', '# map setorigin '))
         self.add_menu(MPMenuItem('Terrain Check', 'Terrain Check', '# terrain check'))
         self.add_menu(MPMenuItem('Show Position', 'Show Position', 'showPosition'))
+        self.add_menu(MPMenuItem('Set Precland', 'Set Precland', '# map setprecland '))
 
         self._colour_for_wp_command = {
             # takeoff commands
@@ -171,6 +172,8 @@ class MapModule(mp_module.MPModule):
             self.cmd_center(args)
         elif args[0] == "follow":
             self.cmd_follow(args)
+        elif args[0] == "setprecland":
+            self.cmd_set_precland(args)
         else:
             print("usage: map <icon|set>")
 
@@ -563,6 +566,14 @@ class MapModule(mp_module.MPModule):
             lat, # lat
             lon, # lon
             alt) # param7
+
+    def cmd_set_precland(self, args):
+        '''called when user selects "Set Precland" on map'''
+        (lat, lon) = (self.click_position[0], self.click_position[1])
+        print("Setting precland to: ", lat, lon)
+        self.param_set("SIM_PLD_LAT", lat)
+        self.param_set("SIM_PLD_LON", lon)
+        self.sitl_obj_last_change = time.time()
 
     def cmd_set_homepos(self, args):
         '''called when user selects "Set Home" on map'''
