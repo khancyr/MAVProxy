@@ -26,6 +26,8 @@ class MapModule(mp_module.MPModule):
         self.wp_change_time = 0
         self.fence_change_time = 0
         self.rally_change_time = 0
+        self.sitl_obj_change_time = 0
+        self.sitl_obj_last_change = 1
         self.have_simstate = False
         self.have_vehicle = {}
         self.move_wp = -1
@@ -248,6 +250,20 @@ class MapModule(mp_module.MPModule):
                                                                linewidth=2, colour=(0,255,0), popup_menu=popup))
         else:
             self.map.remove_object('Fence')
+
+    def display_sitl_obj(self):
+        """Display sitl object."""
+        from MAVProxy.modules.mavproxy_map import mp_slipmap
+        if self.get_mav_param('SIM_PLD_ENABLE') == 1:
+            lat = self.get_mav_param('SIM_PLD_LAT')
+            lon = self.get_mav_param('SIM_PLD_LON')
+            if lat is not None and lon is not None:
+                rotation = self.get_mav_param('SIM_PLD_YAW')
+                icon = self.mpstate.map.icon('precland.png')
+                self.mpstate.map.add_object(mp_slipmap.SlipIcon('PRECLAND_POSITION',
+                                                               (lat, lon),
+                                                               icon, layer=4, rotation=rotation, follow=False))
+                self.sitl_obj_change_time = self.sitl_obj_last_change
 
 
     def closest_waypoint(self, latlon):
@@ -663,9 +679,12 @@ class MapModule(mp_module.MPModule):
         # in the air at the same time
         vehicle = 'Vehicle%u' % m.get_srcSystem()
 
-        if mtype == "SIMSTATE" and self.map_settings.showsimpos:
-            self.create_vehicle_icon('Sim' + vehicle, 'green')
-            self.map.set_position('Sim' + vehicle, (m.lat*1.0e-7, m.lng*1.0e-7), rotation=math.degrees(m.yaw))
+        if m.get_type() == "SIMSTATE":
+            if not self.have_simstate:
+                self.have_simstate = True
+            if self.map_settings.showsimpos:
+                self.create_vehicle_icon('Sim' + vehicle, 'green')
+                self.mpstate.map.set_position('Sim' + vehicle, (m.lat*1.0e-7, m.lng*1.0e-7), rotation=math.degrees(m.yaw))
 
         elif mtype == "AHRS2" and self.map_settings.showahrs2pos:
             self.create_vehicle_icon('AHRS2' + vehicle, 'blue')
@@ -767,6 +786,11 @@ class MapModule(mp_module.MPModule):
         # if the fence has changed, redisplay
         if self.fence_change_time != self.module('fence').fenceloader.last_change:
             self.display_fence()
+
+        # if the sitl objects have changed, redisplay
+        if self.have_simstate:
+            if self.sitl_obj_change_time != self.sitl_obj_last_change:
+                self.display_sitl_obj()
 
         # if the rallypoints have changed, redisplay
         if self.rally_change_time != self.module('rally').rallyloader.last_change:

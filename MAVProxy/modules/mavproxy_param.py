@@ -353,6 +353,8 @@ class ParamState:
             print("Have %u/%u params" % (len(self.mav_param_set), self.mav_param_count))
         else:
             print(usage)
+        if mpstate.module('map') is not None:
+            mpstate.module('map').sitl_obj_last_change = time.time()
 
 
 class ParamModule(mp_module.MPModule):
